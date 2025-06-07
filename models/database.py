@@ -3,19 +3,25 @@
 import os
 import psycopg2
 import pandas as pd
-from config.settings import DB_CONFIG  # Assumes config/__init__.py exists
+from config.settings import DB_CONFIG
+
+MAX_VARCHAR = 255
+
+def safe_trunc(s: str, length: int = MAX_VARCHAR):
+    """Trim s to at most `length` characters (if it’s a string)."""
+    if s is None:
+        return None
+    s = str(s)
+    return s if len(s) <= length else s[:length]
 
 def create_database_connection():
-    """Create and return a psycopg2 database connection."""
     try:
-        conn = psycopg2.connect(**DB_CONFIG)
-        return conn
+        return psycopg2.connect(**DB_CONFIG)
     except Exception as e:
         print(f"Error connecting to database: {e}")
         return None
 
 def create_tables(conn):
-    """Create the database tables if they don't already exist."""
     commands = (
         """
         CREATE TABLE IF NOT EXISTS categories (
@@ -62,251 +68,145 @@ def create_tables(conn):
         );
         """
     )
-
-    try:
-        cur = conn.cursor()
-        for command in commands:
-            cur.execute(command)
-        conn.commit()
-        cur.close()
-    except Exception as e:
-        print(f"Error creating tables: {e}")
-        conn.rollback()
+    cur = conn.cursor()
+    for cmd in commands:
+        cur.execute(cmd)
+    conn.commit()
+    cur.close()
 
 def insert_data_from_csv(conn, csv_file_path):
-    """
-    Read the CSV at `csv_file_path`, clean it up, and insert all data into the database.
-    1. We only insert a product if `actual_price` is present (because actual_price is NOT NULL).
-    2. When inserting locations, we skip any row whose product_id is not in `products`.
-    """
-    try:
-        # 1) Read CSV file into a DataFrame
-        df = pd.read_csv(csv_file_path)
+    df = pd.read_csv(csv_file_path).where(pd.notnull(pd.read_csv(csv_file_path)), None)
 
-        # 2) Replace NaN → None
-        df = df.where(pd.notnull(df), None)
+    # only take the first category before any '|'
+    df['main_category'] = df['category'].apply(
+        lambda c: c.split('|')[0].strip() if c else None
+    )
 
-        # 2a) Derive a 'main_category' column (take only the first part before '|')
-        def extract_first_category(cat):
-            if not cat:
-                return None
-            first = cat.split('|')[0].strip()
-            return first if first else None
+    cur = conn.cursor()
 
-        df['main_category'] = df['category'].apply(extract_first_category)
+    # 1) categories
+    for cat in df['main_category'].dropna().unique():
+        cat = safe_trunc(cat)
+        cur.execute("""
+            INSERT INTO categories (category_name)
+            VALUES (%s)
+            ON CONFLICT (category_name) DO NOTHING
+        """, (cat,))
+    conn.commit()
 
-        cur = conn.cursor()
+    # 2) products
+    def clean_money(x):
+        if not x: return None
+        s = str(x).replace('₹','').replace(',','').strip()
+        return float(s) if s else None
 
-        # -----------------------
-        # 3) Insert categories (using 'main_category')
-        # -----------------------
-        unique_cats = df['main_category'].dropna().unique()
-        for cat in unique_cats:
-            try:
-                cur.execute(
-                    """
-                    INSERT INTO categories (category_name)
-                    VALUES (%s)
-                    ON CONFLICT (category_name) DO NOTHING
-                    """,
-                    (cat,)
-                )
-            except Exception as e:
-                print(f"Error inserting category '{cat}': {e}")
-                conn.rollback()
-        conn.commit()
+    for _, row in df.iterrows():
+        if not row['actual_price']:
+            continue
 
-        # -----------------------
-        # 4) Insert products
-        # -----------------------
-        for _, row in df.iterrows():
-            # 4a) Clean & parse the numeric/text fields
-            #    Skip this entire product if actual_price is missing or empty,
-            #    because actual_price is defined as NOT NULL.
-            if not row['actual_price']:
-                # We cannot insert a product without actual_price
-                # (that would violate the table definition).
-                print(f"Skipping product '{row['product_id']}' because actual_price is missing.")
-                continue
+        # lookup category_id
+        if row['main_category']:
+            cur.execute("SELECT category_id FROM categories WHERE category_name = %s",
+                        (safe_trunc(row['main_category']),))
+            cat_id = cur.fetchone()[0]
+        else:
+            cat_id = None
 
-            # 4b) Look up category_id for row['main_category']
-            if row['main_category']:
-                cur.execute(
-                    "SELECT category_id FROM categories WHERE category_name = %s",
-                    (row['main_category'],)
-                )
-                cat_row = cur.fetchone()
-                category_id = cat_row[0] if cat_row else None
-            else:
-                category_id = None
+        dp = clean_money(row['discounted_price'])
+        ap = clean_money(row['actual_price'])
 
-            # 4c) Parse discounted_price / actual_price (strip ₹ and commas)
-            dp = None
-            if row['discounted_price']:
-                dp_str = str(row['discounted_price']).replace('₹', '').replace(',', '').strip()
-                dp = float(dp_str) if dp_str else None
+        disc_pct = None
+        if row['discount_percentage']:
+            pct = str(row['discount_percentage']).replace('%','').strip()
+            disc_pct = float(pct) if pct else None
 
-            ap_str = str(row['actual_price']).replace('₹', '').replace(',', '').strip()
-            actual_price_val = float(ap_str) if ap_str else None
-            # (We already checked that row['actual_price'] is not None)
+        try:
+            rating = float(row['rating']) if row['rating'] else None
+        except:
+            rating = None
 
-            # 4d) Parse discount_percentage (strip '%')
-            disc_pct = None
-            if row['discount_percentage']:
-                pct_str = str(row['discount_percentage']).replace('%', '').strip()
-                disc_pct = float(pct_str) if pct_str else None
+        rc = None
+        if row['rating_count']:
+            tmp = str(row['rating_count']).replace(',','').strip()
+            rc = int(tmp) if tmp.isdigit() else None
 
-            # 4e) Parse rating
-            rating_val = None
-            if row['rating']:
-                try:
-                    rating_val = float(row['rating'])
-                except:
-                    rating_val = None
+        cur.execute("""
+            INSERT INTO products (
+                product_id, product_name, category_id,
+                discounted_price, actual_price,
+                discount_percentage, rating, rating_count,
+                about_product, product_link, currency
+            ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+            ON CONFLICT (product_id) DO NOTHING
+        """, (
+            safe_trunc(row['product_id'], 255),
+            safe_trunc(row['product_name'], 255),
+            cat_id,
+            dp, ap,
+            disc_pct,
+            rating, rc,
+            row['about_product'],   # TEXT, no truncation needed
+            row['product_link'],    # TEXT
+            safe_trunc(row['currency'], 10)
+        ))
+    conn.commit()
 
-            # 4f) Parse rating_count (strip commas)
-            rating_cnt = None
-            if row['rating_count']:
-                rc_str = str(row['rating_count']).replace(',', '').strip()
-                rating_cnt = int(rc_str) if rc_str.isdigit() else None
+    # 3) users
+    for _, r in df[['user_id','user_name']].drop_duplicates().iterrows():
+        if r['user_id'] and r['user_name']:
+            cur.execute("""
+                INSERT INTO users (user_id, user_name)
+                VALUES (%s,%s)
+                ON CONFLICT (user_id) DO NOTHING
+            """, (
+                safe_trunc(r['user_id'], 255),
+                safe_trunc(r['user_name'], 255),
+            ))
+    conn.commit()
 
-            # 4g) Now insert into products
-            try:
-                cur.execute(
-                    """
-                    INSERT INTO products (
-                        product_id, product_name, category_id,
-                        discounted_price, actual_price,
-                        discount_percentage, rating, rating_count,
-                        about_product, product_link, currency
-                    )
-                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
-                    ON CONFLICT (product_id) DO NOTHING
-                    """,
-                    (
-                        row['product_id'],
-                        row['product_name'],
-                        category_id,
-                        dp,
-                        actual_price_val,
-                        disc_pct,
-                        rating_val,
-                        rating_cnt,
-                        row['about_product'],
-                        row['product_link'],
-                        row['currency']
-                    )
-                )
-            except Exception as e:
-                print(f"Error inserting product '{row['product_id']}': {e}")
-                conn.rollback()
+    # 4) reviews
+    for _, r in df[['review_id','product_id','user_id','review_title','review_content']].drop_duplicates().iterrows():
+        if r['review_id'] and r['product_id'] and r['user_id']:
+            cur.execute("""
+                INSERT INTO reviews
+                  (review_id, product_id, user_id, review_title, review_content)
+                VALUES (%s,%s,%s,%s,%s)
+                ON CONFLICT (review_id) DO NOTHING
+            """, (
+                safe_trunc(r['review_id'],255),
+                safe_trunc(r['product_id'],255),
+                safe_trunc(r['user_id'],255),
+                safe_trunc(r['review_title'],255),
+                r['review_content']  # TEXT
+            ))
+    conn.commit()
 
-        conn.commit()
+    # 5) locations
+    for _, r in df[['product_id','country','city']].drop_duplicates().iterrows():
+        if not r['product_id']:
+            continue
+        cur.execute("SELECT 1 FROM products WHERE product_id = %s", (r['product_id'],))
+        if cur.fetchone():
+            cur.execute("""
+                INSERT INTO locations (product_id, country, city)
+                VALUES (%s,%s,%s)
+            """, (
+                safe_trunc(r['product_id'],255),
+                safe_trunc(r['country'],100),
+                safe_trunc(r['city'],100),
+            ))
+    conn.commit()
 
-        # -----------------------
-        # 5) Insert users (de-duplicate by user_id)
-        # -----------------------
-        user_df = df[['user_id', 'user_name']].drop_duplicates()
-        for _, row in user_df.iterrows():
-            if row['user_id'] and row['user_name']:
-                try:
-                    cur.execute(
-                        """
-                        INSERT INTO users (user_id, user_name)
-                        VALUES (%s,%s)
-                        ON CONFLICT (user_id) DO NOTHING
-                        """,
-                        (row['user_id'], row['user_name'])
-                    )
-                except Exception as e:
-                    print(f"Error inserting user '{row['user_id']}': {e}")
-                    conn.rollback()
-        conn.commit()
-
-        # -----------------------
-        # 6) Insert reviews (de-duplicate by review_id)
-        # -----------------------
-        review_df = df[['review_id', 'product_id', 'user_id', 'review_title', 'review_content']].drop_duplicates()
-        for _, row in review_df.iterrows():
-            if row['review_id'] and row['product_id'] and row['user_id']:
-                try:
-                    cur.execute(
-                        """
-                        INSERT INTO reviews
-                            (review_id, product_id, user_id, review_title, review_content)
-                        VALUES (%s,%s,%s,%s,%s)
-                        ON CONFLICT (review_id) DO NOTHING
-                        """,
-                        (
-                            row['review_id'],
-                            row['product_id'],
-                            row['user_id'],
-                            row['review_title'],
-                            row['review_content']
-                        )
-                    )
-                except Exception as e:
-                    print(f"Error inserting review '{row['review_id']}': {e}")
-                    conn.rollback()
-        conn.commit()
-
-        # -----------------------
-        # 7) Insert locations (only if product_id exists in products)
-        # -----------------------
-        loc_df = df[['product_id', 'country', 'city']].drop_duplicates()
-        for _, row in loc_df.iterrows():
-            pid = row['product_id']
-            if not pid:
-                continue  # skip if no product_id
-
-            # Before inserting, check if this product_id is actually in "products"
-            cur.execute(
-                "SELECT 1 FROM products WHERE product_id = %s",
-                (pid,)
-            )
-            exists = cur.fetchone()
-
-            if not exists:
-                # If the product wasn't inserted (e.g., skipped earlier because actual_price was missing),
-                # then we skip this location row to avoid foreign key violation.
-                print(f"Skipping location insertion for product '{pid}' because it does not exist in products.")
-                continue
-
-            # Now, safe to insert location for an existing product
-            try:
-                cur.execute(
-                    """
-                    INSERT INTO locations (product_id, country, city)
-                    VALUES (%s,%s,%s)
-                    """,
-                    (
-                        pid,
-                        row['country'],
-                        row['city']
-                    )
-                )
-            except Exception as e:
-                print(f"Error inserting location for product '{pid}': {e}")
-                conn.rollback()
-
-        conn.commit()
-        cur.close()
-        print("Data inserted successfully!")
-
-    except Exception as e:
-        print(f"Error inserting data: {e}")
-        conn.rollback()
+    cur.close()
+    print("Data inserted successfully!")
 
 def main():
-    # ───────────────────────────────────────────────────────────
-    # Assume this file lives at <project_root>/models/database.py
-    THIS_FILE_DIR = os.path.dirname(os.path.abspath(__file__))
-    csv_file_path = os.path.join(THIS_FILE_DIR, 'amazon_products_cleaned.csv')
-
+    THIS_DIR = os.path.dirname(os.path.abspath(__file__))
+    csv_path = os.path.join(THIS_DIR, 'amazon_products_cleaned.csv')
     conn = create_database_connection()
-    if conn is not None:
+    if conn:
         create_tables(conn)
-        insert_data_from_csv(conn, csv_file_path)
+        insert_data_from_csv(conn, csv_path)
         conn.close()
 
 if __name__ == "__main__":
