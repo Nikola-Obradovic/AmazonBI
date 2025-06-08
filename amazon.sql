@@ -5,7 +5,7 @@
 -- Dumped from database version 17.5
 -- Dumped by pg_dump version 17.5
 
--- Started on 2025-06-08 20:21:01
+-- Started on 2025-06-08 21:40:05
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -20,7 +20,7 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
--- TOC entry 5064 (class 1262 OID 24850)
+-- TOC entry 5056 (class 1262 OID 24850)
 -- Name: amazon_products; Type: DATABASE; Schema: -; Owner: postgres
 --
 
@@ -54,7 +54,7 @@ CREATE SCHEMA staging;
 ALTER SCHEMA staging OWNER TO postgres;
 
 --
--- TOC entry 8 (class 2615 OID 27978)
+-- TOC entry 8 (class 2615 OID 31811)
 -- Name: star; Type: SCHEMA; Schema: -; Owner: postgres
 --
 
@@ -107,7 +107,7 @@ CREATE SEQUENCE public.categories_category_id_seq
 ALTER SEQUENCE public.categories_category_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5065 (class 0 OID 0)
+-- TOC entry 5057 (class 0 OID 0)
 -- Dependencies: 220
 -- Name: categories_category_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -147,7 +147,7 @@ CREATE SEQUENCE public.locations_location_id_seq
 ALTER SEQUENCE public.locations_location_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5066 (class 0 OID 0)
+-- TOC entry 5058 (class 0 OID 0)
 -- Dependencies: 225
 -- Name: locations_location_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -222,7 +222,7 @@ CREATE TABLE staging.exchange_rates_raw (
 ALTER TABLE staging.exchange_rates_raw OWNER TO postgres;
 
 --
--- TOC entry 244 (class 1259 OID 27989)
+-- TOC entry 241 (class 1259 OID 31812)
 -- Name: dim_category; Type: TABLE; Schema: star; Owner: postgres
 --
 
@@ -236,7 +236,7 @@ CREATE TABLE star.dim_category (
 ALTER TABLE star.dim_category OWNER TO postgres;
 
 --
--- TOC entry 243 (class 1259 OID 27988)
+-- TOC entry 242 (class 1259 OID 31815)
 -- Name: dim_category_category_sk_seq; Type: SEQUENCE; Schema: star; Owner: postgres
 --
 
@@ -252,8 +252,8 @@ CREATE SEQUENCE star.dim_category_category_sk_seq
 ALTER SEQUENCE star.dim_category_category_sk_seq OWNER TO postgres;
 
 --
--- TOC entry 5067 (class 0 OID 0)
--- Dependencies: 243
+-- TOC entry 5059 (class 0 OID 0)
+-- Dependencies: 242
 -- Name: dim_category_category_sk_seq; Type: SEQUENCE OWNED BY; Schema: star; Owner: postgres
 --
 
@@ -261,7 +261,7 @@ ALTER SEQUENCE star.dim_category_category_sk_seq OWNED BY star.dim_category.cate
 
 
 --
--- TOC entry 242 (class 1259 OID 27980)
+-- TOC entry 243 (class 1259 OID 31821)
 -- Name: dim_date; Type: TABLE; Schema: star; Owner: postgres
 --
 
@@ -279,7 +279,7 @@ CREATE TABLE star.dim_date (
 ALTER TABLE star.dim_date OWNER TO postgres;
 
 --
--- TOC entry 241 (class 1259 OID 27979)
+-- TOC entry 244 (class 1259 OID 31824)
 -- Name: dim_date_date_sk_seq; Type: SEQUENCE; Schema: star; Owner: postgres
 --
 
@@ -295,8 +295,8 @@ CREATE SEQUENCE star.dim_date_date_sk_seq
 ALTER SEQUENCE star.dim_date_date_sk_seq OWNER TO postgres;
 
 --
--- TOC entry 5068 (class 0 OID 0)
--- Dependencies: 241
+-- TOC entry 5060 (class 0 OID 0)
+-- Dependencies: 244
 -- Name: dim_date_date_sk_seq; Type: SEQUENCE OWNED BY; Schema: star; Owner: postgres
 --
 
@@ -304,7 +304,7 @@ ALTER SEQUENCE star.dim_date_date_sk_seq OWNED BY star.dim_date.date_sk;
 
 
 --
--- TOC entry 250 (class 1259 OID 28025)
+-- TOC entry 245 (class 1259 OID 31830)
 -- Name: dim_location; Type: TABLE; Schema: star; Owner: postgres
 --
 
@@ -319,7 +319,7 @@ CREATE TABLE star.dim_location (
 ALTER TABLE star.dim_location OWNER TO postgres;
 
 --
--- TOC entry 249 (class 1259 OID 28024)
+-- TOC entry 246 (class 1259 OID 31833)
 -- Name: dim_location_location_sk_seq; Type: SEQUENCE; Schema: star; Owner: postgres
 --
 
@@ -335,8 +335,8 @@ CREATE SEQUENCE star.dim_location_location_sk_seq
 ALTER SEQUENCE star.dim_location_location_sk_seq OWNER TO postgres;
 
 --
--- TOC entry 5069 (class 0 OID 0)
--- Dependencies: 249
+-- TOC entry 5061 (class 0 OID 0)
+-- Dependencies: 246
 -- Name: dim_location_location_sk_seq; Type: SEQUENCE OWNED BY; Schema: star; Owner: postgres
 --
 
@@ -344,22 +344,21 @@ ALTER SEQUENCE star.dim_location_location_sk_seq OWNED BY star.dim_location.loca
 
 
 --
--- TOC entry 248 (class 1259 OID 28009)
+-- TOC entry 247 (class 1259 OID 31839)
 -- Name: dim_product; Type: TABLE; Schema: star; Owner: postgres
 --
 
 CREATE TABLE star.dim_product (
     product_sk integer NOT NULL,
     product_id character varying(255) NOT NULL,
-    product_name character varying(255) NOT NULL,
-    category_sk integer NOT NULL
+    product_name character varying(255) NOT NULL
 );
 
 
 ALTER TABLE star.dim_product OWNER TO postgres;
 
 --
--- TOC entry 247 (class 1259 OID 28008)
+-- TOC entry 248 (class 1259 OID 31844)
 -- Name: dim_product_product_sk_seq; Type: SEQUENCE; Schema: star; Owner: postgres
 --
 
@@ -375,8 +374,8 @@ CREATE SEQUENCE star.dim_product_product_sk_seq
 ALTER SEQUENCE star.dim_product_product_sk_seq OWNER TO postgres;
 
 --
--- TOC entry 5070 (class 0 OID 0)
--- Dependencies: 247
+-- TOC entry 5062 (class 0 OID 0)
+-- Dependencies: 248
 -- Name: dim_product_product_sk_seq; Type: SEQUENCE OWNED BY; Schema: star; Owner: postgres
 --
 
@@ -384,46 +383,7 @@ ALTER SEQUENCE star.dim_product_product_sk_seq OWNED BY star.dim_product.product
 
 
 --
--- TOC entry 246 (class 1259 OID 27998)
--- Name: dim_user; Type: TABLE; Schema: star; Owner: postgres
---
-
-CREATE TABLE star.dim_user (
-    user_sk integer NOT NULL,
-    user_id character varying(255) NOT NULL,
-    user_name character varying(255) NOT NULL
-);
-
-
-ALTER TABLE star.dim_user OWNER TO postgres;
-
---
--- TOC entry 245 (class 1259 OID 27997)
--- Name: dim_user_user_sk_seq; Type: SEQUENCE; Schema: star; Owner: postgres
---
-
-CREATE SEQUENCE star.dim_user_user_sk_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER SEQUENCE star.dim_user_user_sk_seq OWNER TO postgres;
-
---
--- TOC entry 5071 (class 0 OID 0)
--- Dependencies: 245
--- Name: dim_user_user_sk_seq; Type: SEQUENCE OWNED BY; Schema: star; Owner: postgres
---
-
-ALTER SEQUENCE star.dim_user_user_sk_seq OWNED BY star.dim_user.user_sk;
-
-
---
--- TOC entry 252 (class 1259 OID 28034)
+-- TOC entry 249 (class 1259 OID 31866)
 -- Name: fact_pricing; Type: TABLE; Schema: star; Owner: postgres
 --
 
@@ -435,14 +395,16 @@ CREATE TABLE star.fact_pricing (
     discounted_price numeric(10,2),
     discount_percentage numeric(5,2),
     currency character varying(10),
-    rate_to_base numeric(18,8)
+    rate_to_base numeric(18,8),
+    category_sk integer,
+    location_sk integer
 );
 
 
 ALTER TABLE star.fact_pricing OWNER TO postgres;
 
 --
--- TOC entry 251 (class 1259 OID 28033)
+-- TOC entry 250 (class 1259 OID 31869)
 -- Name: fact_pricing_pricing_sk_seq; Type: SEQUENCE; Schema: star; Owner: postgres
 --
 
@@ -458,8 +420,8 @@ CREATE SEQUENCE star.fact_pricing_pricing_sk_seq
 ALTER SEQUENCE star.fact_pricing_pricing_sk_seq OWNER TO postgres;
 
 --
--- TOC entry 5072 (class 0 OID 0)
--- Dependencies: 251
+-- TOC entry 5063 (class 0 OID 0)
+-- Dependencies: 250
 -- Name: fact_pricing_pricing_sk_seq; Type: SEQUENCE OWNED BY; Schema: star; Owner: postgres
 --
 
@@ -502,7 +464,7 @@ CREATE SEQUENCE warehouse.categories_categories_sk_seq
 ALTER SEQUENCE warehouse.categories_categories_sk_seq OWNER TO postgres;
 
 --
--- TOC entry 5073 (class 0 OID 0)
+-- TOC entry 5064 (class 0 OID 0)
 -- Dependencies: 228
 -- Name: categories_categories_sk_seq; Type: SEQUENCE OWNED BY; Schema: warehouse; Owner: postgres
 --
@@ -562,7 +524,7 @@ CREATE SEQUENCE warehouse.exchange_rates_exchange_rates_sk_seq
 ALTER SEQUENCE warehouse.exchange_rates_exchange_rates_sk_seq OWNER TO postgres;
 
 --
--- TOC entry 5074 (class 0 OID 0)
+-- TOC entry 5065 (class 0 OID 0)
 -- Dependencies: 238
 -- Name: exchange_rates_exchange_rates_sk_seq; Type: SEQUENCE OWNED BY; Schema: warehouse; Owner: postgres
 --
@@ -608,7 +570,7 @@ CREATE SEQUENCE warehouse.locations_locations_sk_seq
 ALTER SEQUENCE warehouse.locations_locations_sk_seq OWNER TO postgres;
 
 --
--- TOC entry 5075 (class 0 OID 0)
+-- TOC entry 5066 (class 0 OID 0)
 -- Dependencies: 236
 -- Name: locations_locations_sk_seq; Type: SEQUENCE OWNED BY; Schema: warehouse; Owner: postgres
 --
@@ -661,7 +623,7 @@ CREATE SEQUENCE warehouse.products_products_sk_seq
 ALTER SEQUENCE warehouse.products_products_sk_seq OWNER TO postgres;
 
 --
--- TOC entry 5076 (class 0 OID 0)
+-- TOC entry 5067 (class 0 OID 0)
 -- Dependencies: 232
 -- Name: products_products_sk_seq; Type: SEQUENCE OWNED BY; Schema: warehouse; Owner: postgres
 --
@@ -708,7 +670,7 @@ CREATE SEQUENCE warehouse.reviews_reviews_sk_seq
 ALTER SEQUENCE warehouse.reviews_reviews_sk_seq OWNER TO postgres;
 
 --
--- TOC entry 5077 (class 0 OID 0)
+-- TOC entry 5068 (class 0 OID 0)
 -- Dependencies: 234
 -- Name: reviews_reviews_sk_seq; Type: SEQUENCE OWNED BY; Schema: warehouse; Owner: postgres
 --
@@ -752,7 +714,7 @@ CREATE SEQUENCE warehouse.users_users_sk_seq
 ALTER SEQUENCE warehouse.users_users_sk_seq OWNER TO postgres;
 
 --
--- TOC entry 5078 (class 0 OID 0)
+-- TOC entry 5069 (class 0 OID 0)
 -- Dependencies: 230
 -- Name: users_users_sk_seq; Type: SEQUENCE OWNED BY; Schema: warehouse; Owner: postgres
 --
@@ -761,7 +723,7 @@ ALTER SEQUENCE warehouse.users_users_sk_seq OWNED BY warehouse.users.users_sk;
 
 
 --
--- TOC entry 4827 (class 2604 OID 25866)
+-- TOC entry 4822 (class 2604 OID 25866)
 -- Name: categories category_id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -769,7 +731,7 @@ ALTER TABLE ONLY public.categories ALTER COLUMN category_id SET DEFAULT nextval(
 
 
 --
--- TOC entry 4828 (class 2604 OID 25911)
+-- TOC entry 4823 (class 2604 OID 25911)
 -- Name: locations location_id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -777,7 +739,7 @@ ALTER TABLE ONLY public.locations ALTER COLUMN location_id SET DEFAULT nextval('
 
 
 --
--- TOC entry 4842 (class 2604 OID 27992)
+-- TOC entry 4836 (class 2604 OID 31816)
 -- Name: dim_category category_sk; Type: DEFAULT; Schema: star; Owner: postgres
 --
 
@@ -785,7 +747,7 @@ ALTER TABLE ONLY star.dim_category ALTER COLUMN category_sk SET DEFAULT nextval(
 
 
 --
--- TOC entry 4841 (class 2604 OID 27983)
+-- TOC entry 4837 (class 2604 OID 31825)
 -- Name: dim_date date_sk; Type: DEFAULT; Schema: star; Owner: postgres
 --
 
@@ -793,7 +755,7 @@ ALTER TABLE ONLY star.dim_date ALTER COLUMN date_sk SET DEFAULT nextval('star.di
 
 
 --
--- TOC entry 4845 (class 2604 OID 28028)
+-- TOC entry 4838 (class 2604 OID 31834)
 -- Name: dim_location location_sk; Type: DEFAULT; Schema: star; Owner: postgres
 --
 
@@ -801,7 +763,7 @@ ALTER TABLE ONLY star.dim_location ALTER COLUMN location_sk SET DEFAULT nextval(
 
 
 --
--- TOC entry 4844 (class 2604 OID 28012)
+-- TOC entry 4839 (class 2604 OID 31845)
 -- Name: dim_product product_sk; Type: DEFAULT; Schema: star; Owner: postgres
 --
 
@@ -809,15 +771,7 @@ ALTER TABLE ONLY star.dim_product ALTER COLUMN product_sk SET DEFAULT nextval('s
 
 
 --
--- TOC entry 4843 (class 2604 OID 28001)
--- Name: dim_user user_sk; Type: DEFAULT; Schema: star; Owner: postgres
---
-
-ALTER TABLE ONLY star.dim_user ALTER COLUMN user_sk SET DEFAULT nextval('star.dim_user_user_sk_seq'::regclass);
-
-
---
--- TOC entry 4846 (class 2604 OID 28037)
+-- TOC entry 4840 (class 2604 OID 31870)
 -- Name: fact_pricing pricing_sk; Type: DEFAULT; Schema: star; Owner: postgres
 --
 
@@ -825,7 +779,7 @@ ALTER TABLE ONLY star.fact_pricing ALTER COLUMN pricing_sk SET DEFAULT nextval('
 
 
 --
--- TOC entry 4829 (class 2604 OID 27025)
+-- TOC entry 4824 (class 2604 OID 27025)
 -- Name: categories categories_sk; Type: DEFAULT; Schema: warehouse; Owner: postgres
 --
 
@@ -833,7 +787,7 @@ ALTER TABLE ONLY warehouse.categories ALTER COLUMN categories_sk SET DEFAULT nex
 
 
 --
--- TOC entry 4839 (class 2604 OID 27096)
+-- TOC entry 4834 (class 2604 OID 27096)
 -- Name: exchange_rates exchange_rates_sk; Type: DEFAULT; Schema: warehouse; Owner: postgres
 --
 
@@ -841,7 +795,7 @@ ALTER TABLE ONLY warehouse.exchange_rates ALTER COLUMN exchange_rates_sk SET DEF
 
 
 --
--- TOC entry 4837 (class 2604 OID 27082)
+-- TOC entry 4832 (class 2604 OID 27082)
 -- Name: locations locations_sk; Type: DEFAULT; Schema: warehouse; Owner: postgres
 --
 
@@ -849,7 +803,7 @@ ALTER TABLE ONLY warehouse.locations ALTER COLUMN locations_sk SET DEFAULT nextv
 
 
 --
--- TOC entry 4833 (class 2604 OID 27045)
+-- TOC entry 4828 (class 2604 OID 27045)
 -- Name: products products_sk; Type: DEFAULT; Schema: warehouse; Owner: postgres
 --
 
@@ -857,7 +811,7 @@ ALTER TABLE ONLY warehouse.products ALTER COLUMN products_sk SET DEFAULT nextval
 
 
 --
--- TOC entry 4835 (class 2604 OID 27061)
+-- TOC entry 4830 (class 2604 OID 27061)
 -- Name: reviews reviews_sk; Type: DEFAULT; Schema: warehouse; Owner: postgres
 --
 
@@ -865,7 +819,7 @@ ALTER TABLE ONLY warehouse.reviews ALTER COLUMN reviews_sk SET DEFAULT nextval('
 
 
 --
--- TOC entry 4831 (class 2604 OID 27034)
+-- TOC entry 4826 (class 2604 OID 27034)
 -- Name: users users_sk; Type: DEFAULT; Schema: warehouse; Owner: postgres
 --
 
@@ -873,7 +827,7 @@ ALTER TABLE ONLY warehouse.users ALTER COLUMN users_sk SET DEFAULT nextval('ware
 
 
 --
--- TOC entry 4848 (class 2606 OID 25870)
+-- TOC entry 4842 (class 2606 OID 25870)
 -- Name: categories categories_category_name_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -882,7 +836,7 @@ ALTER TABLE ONLY public.categories
 
 
 --
--- TOC entry 4850 (class 2606 OID 25868)
+-- TOC entry 4844 (class 2606 OID 25868)
 -- Name: categories categories_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -891,7 +845,7 @@ ALTER TABLE ONLY public.categories
 
 
 --
--- TOC entry 4858 (class 2606 OID 25913)
+-- TOC entry 4852 (class 2606 OID 25913)
 -- Name: locations locations_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -900,7 +854,7 @@ ALTER TABLE ONLY public.locations
 
 
 --
--- TOC entry 4852 (class 2606 OID 25877)
+-- TOC entry 4846 (class 2606 OID 25877)
 -- Name: products products_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -909,7 +863,7 @@ ALTER TABLE ONLY public.products
 
 
 --
--- TOC entry 4856 (class 2606 OID 25896)
+-- TOC entry 4850 (class 2606 OID 25896)
 -- Name: reviews reviews_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -918,7 +872,7 @@ ALTER TABLE ONLY public.reviews
 
 
 --
--- TOC entry 4854 (class 2606 OID 25889)
+-- TOC entry 4848 (class 2606 OID 25889)
 -- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -927,7 +881,7 @@ ALTER TABLE ONLY public.users
 
 
 --
--- TOC entry 4883 (class 2606 OID 27996)
+-- TOC entry 4873 (class 2606 OID 31820)
 -- Name: dim_category dim_category_category_id_key; Type: CONSTRAINT; Schema: star; Owner: postgres
 --
 
@@ -936,7 +890,7 @@ ALTER TABLE ONLY star.dim_category
 
 
 --
--- TOC entry 4885 (class 2606 OID 27994)
+-- TOC entry 4875 (class 2606 OID 31818)
 -- Name: dim_category dim_category_pkey; Type: CONSTRAINT; Schema: star; Owner: postgres
 --
 
@@ -945,7 +899,7 @@ ALTER TABLE ONLY star.dim_category
 
 
 --
--- TOC entry 4879 (class 2606 OID 27987)
+-- TOC entry 4877 (class 2606 OID 31829)
 -- Name: dim_date dim_date_full_date_key; Type: CONSTRAINT; Schema: star; Owner: postgres
 --
 
@@ -954,7 +908,7 @@ ALTER TABLE ONLY star.dim_date
 
 
 --
--- TOC entry 4881 (class 2606 OID 27985)
+-- TOC entry 4879 (class 2606 OID 31827)
 -- Name: dim_date dim_date_pkey; Type: CONSTRAINT; Schema: star; Owner: postgres
 --
 
@@ -963,7 +917,7 @@ ALTER TABLE ONLY star.dim_date
 
 
 --
--- TOC entry 4895 (class 2606 OID 28032)
+-- TOC entry 4881 (class 2606 OID 31838)
 -- Name: dim_location dim_location_location_id_key; Type: CONSTRAINT; Schema: star; Owner: postgres
 --
 
@@ -972,7 +926,7 @@ ALTER TABLE ONLY star.dim_location
 
 
 --
--- TOC entry 4897 (class 2606 OID 28030)
+-- TOC entry 4883 (class 2606 OID 31836)
 -- Name: dim_location dim_location_pkey; Type: CONSTRAINT; Schema: star; Owner: postgres
 --
 
@@ -981,7 +935,7 @@ ALTER TABLE ONLY star.dim_location
 
 
 --
--- TOC entry 4891 (class 2606 OID 28016)
+-- TOC entry 4885 (class 2606 OID 31847)
 -- Name: dim_product dim_product_pkey; Type: CONSTRAINT; Schema: star; Owner: postgres
 --
 
@@ -990,7 +944,7 @@ ALTER TABLE ONLY star.dim_product
 
 
 --
--- TOC entry 4893 (class 2606 OID 28018)
+-- TOC entry 4887 (class 2606 OID 31849)
 -- Name: dim_product dim_product_product_id_key; Type: CONSTRAINT; Schema: star; Owner: postgres
 --
 
@@ -999,25 +953,7 @@ ALTER TABLE ONLY star.dim_product
 
 
 --
--- TOC entry 4887 (class 2606 OID 28005)
--- Name: dim_user dim_user_pkey; Type: CONSTRAINT; Schema: star; Owner: postgres
---
-
-ALTER TABLE ONLY star.dim_user
-    ADD CONSTRAINT dim_user_pkey PRIMARY KEY (user_sk);
-
-
---
--- TOC entry 4889 (class 2606 OID 28007)
--- Name: dim_user dim_user_user_id_key; Type: CONSTRAINT; Schema: star; Owner: postgres
---
-
-ALTER TABLE ONLY star.dim_user
-    ADD CONSTRAINT dim_user_user_id_key UNIQUE (user_id);
-
-
---
--- TOC entry 4899 (class 2606 OID 28039)
+-- TOC entry 4889 (class 2606 OID 31872)
 -- Name: fact_pricing fact_pricing_pkey; Type: CONSTRAINT; Schema: star; Owner: postgres
 --
 
@@ -1026,7 +962,7 @@ ALTER TABLE ONLY star.fact_pricing
 
 
 --
--- TOC entry 4861 (class 2606 OID 27028)
+-- TOC entry 4855 (class 2606 OID 27028)
 -- Name: categories categories_pkey; Type: CONSTRAINT; Schema: warehouse; Owner: postgres
 --
 
@@ -1035,7 +971,7 @@ ALTER TABLE ONLY warehouse.categories
 
 
 --
--- TOC entry 4876 (class 2606 OID 27099)
+-- TOC entry 4870 (class 2606 OID 27099)
 -- Name: exchange_rates exchange_rates_pkey; Type: CONSTRAINT; Schema: warehouse; Owner: postgres
 --
 
@@ -1044,7 +980,7 @@ ALTER TABLE ONLY warehouse.exchange_rates
 
 
 --
--- TOC entry 4874 (class 2606 OID 27085)
+-- TOC entry 4868 (class 2606 OID 27085)
 -- Name: locations locations_pkey; Type: CONSTRAINT; Schema: warehouse; Owner: postgres
 --
 
@@ -1053,7 +989,7 @@ ALTER TABLE ONLY warehouse.locations
 
 
 --
--- TOC entry 4868 (class 2606 OID 27050)
+-- TOC entry 4862 (class 2606 OID 27050)
 -- Name: products products_pkey; Type: CONSTRAINT; Schema: warehouse; Owner: postgres
 --
 
@@ -1062,7 +998,7 @@ ALTER TABLE ONLY warehouse.products
 
 
 --
--- TOC entry 4871 (class 2606 OID 27066)
+-- TOC entry 4865 (class 2606 OID 27066)
 -- Name: reviews reviews_pkey; Type: CONSTRAINT; Schema: warehouse; Owner: postgres
 --
 
@@ -1071,7 +1007,7 @@ ALTER TABLE ONLY warehouse.reviews
 
 
 --
--- TOC entry 4865 (class 2606 OID 27039)
+-- TOC entry 4859 (class 2606 OID 27039)
 -- Name: users users_pkey; Type: CONSTRAINT; Schema: warehouse; Owner: postgres
 --
 
@@ -1080,7 +1016,7 @@ ALTER TABLE ONLY warehouse.users
 
 
 --
--- TOC entry 4859 (class 1259 OID 26180)
+-- TOC entry 4853 (class 1259 OID 26180)
 -- Name: idx_staging_fetched_at; Type: INDEX; Schema: staging; Owner: postgres
 --
 
@@ -1088,23 +1024,7 @@ CREATE INDEX idx_staging_fetched_at ON staging.exchange_rates_raw USING btree (f
 
 
 --
--- TOC entry 4900 (class 1259 OID 28050)
--- Name: idx_fact_pricing_date; Type: INDEX; Schema: star; Owner: postgres
---
-
-CREATE INDEX idx_fact_pricing_date ON star.fact_pricing USING btree (date_sk);
-
-
---
--- TOC entry 4901 (class 1259 OID 28051)
--- Name: idx_fact_pricing_product; Type: INDEX; Schema: star; Owner: postgres
---
-
-CREATE INDEX idx_fact_pricing_product ON star.fact_pricing USING btree (product_sk);
-
-
---
--- TOC entry 4862 (class 1259 OID 27029)
+-- TOC entry 4856 (class 1259 OID 27029)
 -- Name: idx_categories_natural; Type: INDEX; Schema: warehouse; Owner: postgres
 --
 
@@ -1112,7 +1032,7 @@ CREATE INDEX idx_categories_natural ON warehouse.categories USING btree (categor
 
 
 --
--- TOC entry 4877 (class 1259 OID 27105)
+-- TOC entry 4871 (class 1259 OID 27105)
 -- Name: idx_exchange_rates_product; Type: INDEX; Schema: warehouse; Owner: postgres
 --
 
@@ -1120,7 +1040,7 @@ CREATE INDEX idx_exchange_rates_product ON warehouse.exchange_rates USING btree 
 
 
 --
--- TOC entry 4872 (class 1259 OID 27086)
+-- TOC entry 4866 (class 1259 OID 27086)
 -- Name: idx_locations_natural; Type: INDEX; Schema: warehouse; Owner: postgres
 --
 
@@ -1128,7 +1048,7 @@ CREATE INDEX idx_locations_natural ON warehouse.locations USING btree (location_
 
 
 --
--- TOC entry 4866 (class 1259 OID 27051)
+-- TOC entry 4860 (class 1259 OID 27051)
 -- Name: idx_products_natural; Type: INDEX; Schema: warehouse; Owner: postgres
 --
 
@@ -1136,7 +1056,7 @@ CREATE INDEX idx_products_natural ON warehouse.products USING btree (product_id)
 
 
 --
--- TOC entry 4869 (class 1259 OID 27067)
+-- TOC entry 4863 (class 1259 OID 27067)
 -- Name: idx_reviews_natural; Type: INDEX; Schema: warehouse; Owner: postgres
 --
 
@@ -1144,7 +1064,7 @@ CREATE INDEX idx_reviews_natural ON warehouse.reviews USING btree (review_id);
 
 
 --
--- TOC entry 4863 (class 1259 OID 27040)
+-- TOC entry 4857 (class 1259 OID 27040)
 -- Name: idx_users_natural; Type: INDEX; Schema: warehouse; Owner: postgres
 --
 
@@ -1152,7 +1072,7 @@ CREATE INDEX idx_users_natural ON warehouse.users USING btree (user_id);
 
 
 --
--- TOC entry 4905 (class 2606 OID 25914)
+-- TOC entry 4893 (class 2606 OID 25914)
 -- Name: locations locations_product_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1161,7 +1081,7 @@ ALTER TABLE ONLY public.locations
 
 
 --
--- TOC entry 4902 (class 2606 OID 25878)
+-- TOC entry 4890 (class 2606 OID 25878)
 -- Name: products products_category_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1170,7 +1090,7 @@ ALTER TABLE ONLY public.products
 
 
 --
--- TOC entry 4903 (class 2606 OID 25897)
+-- TOC entry 4891 (class 2606 OID 25897)
 -- Name: reviews reviews_product_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1179,7 +1099,7 @@ ALTER TABLE ONLY public.reviews
 
 
 --
--- TOC entry 4904 (class 2606 OID 25902)
+-- TOC entry 4892 (class 2606 OID 25902)
 -- Name: reviews reviews_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1188,16 +1108,16 @@ ALTER TABLE ONLY public.reviews
 
 
 --
--- TOC entry 4911 (class 2606 OID 28019)
--- Name: dim_product dim_product_category_sk_fkey; Type: FK CONSTRAINT; Schema: star; Owner: postgres
+-- TOC entry 4899 (class 2606 OID 31991)
+-- Name: fact_pricing fact_pricing_category_sk_fkey; Type: FK CONSTRAINT; Schema: star; Owner: postgres
 --
 
-ALTER TABLE ONLY star.dim_product
-    ADD CONSTRAINT dim_product_category_sk_fkey FOREIGN KEY (category_sk) REFERENCES star.dim_category(category_sk) ON UPDATE CASCADE ON DELETE RESTRICT;
+ALTER TABLE ONLY star.fact_pricing
+    ADD CONSTRAINT fact_pricing_category_sk_fkey FOREIGN KEY (category_sk) REFERENCES star.dim_category(category_sk);
 
 
 --
--- TOC entry 4912 (class 2606 OID 28040)
+-- TOC entry 4900 (class 2606 OID 31873)
 -- Name: fact_pricing fact_pricing_date_sk_fkey; Type: FK CONSTRAINT; Schema: star; Owner: postgres
 --
 
@@ -1206,7 +1126,7 @@ ALTER TABLE ONLY star.fact_pricing
 
 
 --
--- TOC entry 4913 (class 2606 OID 28045)
+-- TOC entry 4901 (class 2606 OID 31878)
 -- Name: fact_pricing fact_pricing_product_sk_fkey; Type: FK CONSTRAINT; Schema: star; Owner: postgres
 --
 
@@ -1215,7 +1135,43 @@ ALTER TABLE ONLY star.fact_pricing
 
 
 --
--- TOC entry 4910 (class 2606 OID 27100)
+-- TOC entry 4902 (class 2606 OID 31894)
+-- Name: fact_pricing fk_fp_category; Type: FK CONSTRAINT; Schema: star; Owner: postgres
+--
+
+ALTER TABLE ONLY star.fact_pricing
+    ADD CONSTRAINT fk_fp_category FOREIGN KEY (category_sk) REFERENCES star.dim_category(category_sk) ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+--
+-- TOC entry 4903 (class 2606 OID 31884)
+-- Name: fact_pricing fk_fp_date; Type: FK CONSTRAINT; Schema: star; Owner: postgres
+--
+
+ALTER TABLE ONLY star.fact_pricing
+    ADD CONSTRAINT fk_fp_date FOREIGN KEY (date_sk) REFERENCES star.dim_date(date_sk) ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+--
+-- TOC entry 4904 (class 2606 OID 31899)
+-- Name: fact_pricing fk_fp_location; Type: FK CONSTRAINT; Schema: star; Owner: postgres
+--
+
+ALTER TABLE ONLY star.fact_pricing
+    ADD CONSTRAINT fk_fp_location FOREIGN KEY (location_sk) REFERENCES star.dim_location(location_sk) ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+--
+-- TOC entry 4905 (class 2606 OID 31889)
+-- Name: fact_pricing fk_fp_product; Type: FK CONSTRAINT; Schema: star; Owner: postgres
+--
+
+ALTER TABLE ONLY star.fact_pricing
+    ADD CONSTRAINT fk_fp_product FOREIGN KEY (product_sk) REFERENCES star.dim_product(product_sk) ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+--
+-- TOC entry 4898 (class 2606 OID 27100)
 -- Name: exchange_rates fk_exchangerates_product_sk; Type: FK CONSTRAINT; Schema: warehouse; Owner: postgres
 --
 
@@ -1224,7 +1180,7 @@ ALTER TABLE ONLY warehouse.exchange_rates
 
 
 --
--- TOC entry 4909 (class 2606 OID 27087)
+-- TOC entry 4897 (class 2606 OID 27087)
 -- Name: locations fk_locations_product_sk; Type: FK CONSTRAINT; Schema: warehouse; Owner: postgres
 --
 
@@ -1233,7 +1189,7 @@ ALTER TABLE ONLY warehouse.locations
 
 
 --
--- TOC entry 4906 (class 2606 OID 27052)
+-- TOC entry 4894 (class 2606 OID 27052)
 -- Name: products fk_products_category_sk; Type: FK CONSTRAINT; Schema: warehouse; Owner: postgres
 --
 
@@ -1242,7 +1198,7 @@ ALTER TABLE ONLY warehouse.products
 
 
 --
--- TOC entry 4907 (class 2606 OID 27068)
+-- TOC entry 4895 (class 2606 OID 27068)
 -- Name: reviews fk_reviews_product_sk; Type: FK CONSTRAINT; Schema: warehouse; Owner: postgres
 --
 
@@ -1251,7 +1207,7 @@ ALTER TABLE ONLY warehouse.reviews
 
 
 --
--- TOC entry 4908 (class 2606 OID 27073)
+-- TOC entry 4896 (class 2606 OID 27073)
 -- Name: reviews fk_reviews_user_sk; Type: FK CONSTRAINT; Schema: warehouse; Owner: postgres
 --
 
@@ -1259,7 +1215,7 @@ ALTER TABLE ONLY warehouse.reviews
     ADD CONSTRAINT fk_reviews_user_sk FOREIGN KEY (user_sk) REFERENCES warehouse.users(users_sk) ON UPDATE CASCADE ON DELETE RESTRICT;
 
 
--- Completed on 2025-06-08 20:21:02
+-- Completed on 2025-06-08 21:40:05
 
 --
 -- PostgreSQL database dump complete
