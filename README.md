@@ -142,15 +142,23 @@ python -m streamlit run reports/dashboard.py
 
 ### 🔍 Features:
 
-- Filters by date, category, and product
-- KPI cards for:
-  - Average price
-  - Discount %
-  - Rate to base currency
-- Charts:
-  - Bar chart: price by category
-  - Line chart: product price over time
-- Interactive data table
+- **Advanced Filters**:
+  - Date range
+  - Category and product
+  - Country and city
+- **KPI Cards**:
+  - Average actual price
+  - Average discount percentage
+  - Average rate to base currency
+  - Distinct number of countries in view
+- **Visualizations**:
+  - 📊 Bar chart: Average price by category
+  - 🌍 Bar chart: Average price by country
+  - 📈 Line chart: Product price over time
+- **Interactive Table**:
+  - Displays raw, filtered data with full context
+  - Scrollable and responsive to filter selections
+
 
 ---
 
