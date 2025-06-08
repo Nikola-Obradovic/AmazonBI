@@ -187,6 +187,7 @@ Warehouse schema ERD:
 
 
 Star schema ERD:
+
 ![image](https://github.com/user-attachments/assets/f304bcbc-5764-4893-95f5-c65567da346a)
 
 
