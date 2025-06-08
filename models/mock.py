@@ -7,7 +7,7 @@ from datetime import datetime
 MAX_VARCHAR = 255
 
 def safe_trunc(s: str, length: int = MAX_VARCHAR):
-    """Trim s to at most `length` characters (if it’s a string)."""
+    """Trim s to at most `length` characters."""
     if s is None:
         return None
     s = str(s)
@@ -24,7 +24,9 @@ def main():
     conn = psycopg2.connect(**DB_CONFIG)
     cur = conn.cursor()
 
+    # --------------------------------------------------------------------------
     # 1) Insert mock categories
+    # --------------------------------------------------------------------------
     mock_cats = ["MockCategoryA", "MockCategoryB"]
     for cat in mock_cats:
         cur.execute("""
@@ -34,7 +36,7 @@ def main():
         """, (safe_trunc(cat),))
     conn.commit()
 
-    # Fetch their IDs
+    # Map category names → IDs
     cur.execute("""
         SELECT category_id, category_name
           FROM categories
@@ -42,7 +44,9 @@ def main():
     """, (mock_cats,))
     cat_map = {name: cid for cid, name in cur.fetchall()}
 
+    # --------------------------------------------------------------------------
     # 2) Insert mock products
+    # --------------------------------------------------------------------------
     mock_products = [
         {
             "product_id": "MOCK-P1",
@@ -109,7 +113,9 @@ def main():
         ))
     conn.commit()
 
+    # --------------------------------------------------------------------------
     # 3) Insert mock users
+    # --------------------------------------------------------------------------
     mock_users = [
         {"user_id": "MOCK-U1", "user_name": "Alice Mock"},
         {"user_id": "MOCK-U2", "user_name": "Bob Mockson"},
@@ -126,7 +132,9 @@ def main():
         ))
     conn.commit()
 
+    # --------------------------------------------------------------------------
     # 4) Insert mock reviews
+    # --------------------------------------------------------------------------
     mock_reviews = [
         {"review_id": "MOCK-R1", "product_id": "MOCK-P1", "user_id": "MOCK-U1",
          "review_title": "Loved it!", "review_content": "This mock product is awesome."},
@@ -152,7 +160,9 @@ def main():
         ))
     conn.commit()
 
+    # --------------------------------------------------------------------------
     # 5) Insert mock locations
+    # --------------------------------------------------------------------------
     mock_locs = [
         {"product_id": "MOCK-P1", "country": "USA", "city": "New York"},
         {"product_id": "MOCK-P2", "country": "Canada", "city": "Toronto"},
@@ -171,9 +181,51 @@ def main():
             ))
     conn.commit()
 
+    # --------------------------------------------------------------------------
+    # 6) Update currency on exactly these four real products → EUR
+    # --------------------------------------------------------------------------
+    products_to_update = [
+        "B08HDJ86NZ",
+        "B08CF3B7N1",
+        "B09L1TF5P6",
+        "B09KLMVZ3B"
+    ]
+    for pid in products_to_update:
+        cur.execute("""
+            UPDATE products
+               SET currency = %s
+             WHERE product_id = %s
+        """, (safe_trunc("EUR", 10), pid))
+    conn.commit()
+
+    # --------------------------------------------------------------------------
+    # 7) Delete exactly these three real products (and their reviews/locations)
+    # --------------------------------------------------------------------------
+    to_delete = [
+        "B07JW9H4J1",
+        "B098NS6PVG",
+        "B096MSW6CT"
+    ]
+    # remove dependent reviews
+    cur.execute("""
+        DELETE FROM reviews
+         WHERE product_id = ANY(%s)
+    """, (to_delete,))
+    # remove dependent locations
+    cur.execute("""
+        DELETE FROM locations
+         WHERE product_id = ANY(%s)
+    """, (to_delete,))
+    # now delete the products themselves
+    cur.execute("""
+        DELETE FROM products
+         WHERE product_id = ANY(%s)
+    """, (to_delete,))
+    conn.commit()
+
     cur.close()
     conn.close()
-    print("✅ Mock data inserted successfully.")
+    print("✅ Mock data inserted, currencies updated, and specified products deleted.")
 
 if __name__ == "__main__":
     main()

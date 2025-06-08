@@ -8,7 +8,7 @@ from config.settings import DB_CONFIG
 MAX_VARCHAR = 255
 
 def safe_trunc(s: str, length: int = MAX_VARCHAR):
-    """Trim s to at most `length` characters (if it’s a string)."""
+    """Trim s to at most length characters (if it’s a string)."""
     if s is None:
         return None
     s = str(s)
@@ -20,6 +20,22 @@ def create_database_connection():
     except Exception as e:
         print(f"Error connecting to database: {e}")
         return None
+
+def clear_data(conn):
+    """Remove all rows from all tables so we can start fresh."""
+    cur = conn.cursor()
+    # Truncate in dependency order:
+    cur.execute("""
+      TRUNCATE locations,
+               reviews,
+               products,
+               users,
+               categories
+        RESTART IDENTITY
+        CASCADE;
+    """)
+    conn.commit()
+    cur.close()
 
 def create_tables(conn):
     commands = (
@@ -203,10 +219,18 @@ def insert_data_from_csv(conn, csv_file_path):
 def main():
     THIS_DIR = os.path.dirname(os.path.abspath(__file__))
     csv_path = os.path.join(THIS_DIR, 'amazon_products_cleaned.csv')
+
     conn = create_database_connection()
     if conn:
+        # 0) wipe out _all_ existing rows:
+        clear_data(conn)
+
+        # 1) ensure tables exist
         create_tables(conn)
+
+        # 2) load fresh
         insert_data_from_csv(conn, csv_path)
+
         conn.close()
 
 if __name__ == "__main__":
