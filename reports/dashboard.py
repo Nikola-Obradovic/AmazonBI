@@ -1,5 +1,3 @@
-# reports/dashboard.py
-
 import streamlit as st
 import pandas as pd
 import psycopg2
@@ -10,25 +8,29 @@ from config.settings import DB_CONFIG
 def load_data():
     """Load dims + fact_pricing from the star schema into a single DataFrame."""
     conn = psycopg2.connect(**DB_CONFIG)
-    query = """
+    df = pd.read_sql("""
       SELECT
         fp.pricing_sk,
         dd.full_date,
         dc.category_name,
         dp.product_name,
+        dl.country,
+        dl.city,
         fp.actual_price,
         fp.discounted_price,
         fp.discount_percentage,
         fp.currency,
         fp.rate_to_base
-      FROM star.fact_pricing fp
-      JOIN star.dim_date     dd ON fp.date_sk    = dd.date_sk
-      JOIN star.dim_product  dp ON fp.product_sk = dp.product_sk
-      JOIN star.dim_category dc ON dp.category_sk = dc.category_sk;
-    """
-    df = pd.read_sql(query, conn)
+      FROM star.fact_pricing AS fp
+      JOIN star.dim_date     AS dd ON fp.date_sk     = dd.date_sk
+      JOIN star.dim_product  AS dp ON fp.product_sk  = dp.product_sk
+      JOIN star.dim_category AS dc ON fp.category_sk = dc.category_sk
+      JOIN star.dim_location AS dl ON fp.location_sk = dl.location_sk
+      ;
+    """, conn)
     conn.close()
-    # convert to native date
+
+    # ensure full_date is a native date for Streamlit widgets
     df["full_date"] = pd.to_datetime(df["full_date"]).dt.date
     return df
 
@@ -40,68 +42,84 @@ df = load_data()
 
 # 2) Sidebar filters
 st.sidebar.header("Filters")
+
+# date range
+if not df.empty:
+    min_d, max_d = df["full_date"].min(), df["full_date"].max()
+else:
+    min_d = max_d = date.today()
+
 min_date, max_date = st.sidebar.date_input(
     "Date range",
-    value=[df["full_date"].min(), df["full_date"].max()],
+    value=(min_d, max_d),
     key="date_range"
 )
-cats = st.sidebar.multiselect(
-    "Category",
-    options=sorted(df["category_name"].unique()),
-    default=None
-)
-prods = st.sidebar.multiselect(
-    "Product",
-    options=sorted(df["product_name"].unique()),
-    default=None
-)
+
+# category & product
+cats  = st.sidebar.multiselect("Category", sorted(df["category_name"].unique()))
+prods = st.sidebar.multiselect("Product",  sorted(df["product_name"].unique()))
+
+# country & city
+countries = st.sidebar.multiselect("Country", sorted(df["country"].unique()))
+cities    = st.sidebar.multiselect("City",    sorted(df["city"].unique()))
 
 # 3) Apply filters
 mask = (df["full_date"] >= min_date) & (df["full_date"] <= max_date)
-if cats:
-    mask &= df["category_name"].isin(cats)
-if prods:
-    mask &= df["product_name"].isin(prods)
+if cats:      mask &= df["category_name"].isin(cats)
+if prods:     mask &= df["product_name"].isin(prods)
+if countries: mask &= df["country"].isin(countries)
+if cities:    mask &= df["city"].isin(cities)
 filtered = df[mask]
 
-st.markdown(f"**Showing {len(filtered)} records** from {df.shape[0]} total.")
+st.markdown(f"**Showing {len(filtered)} records** from {len(df)} total.")
 
 # 4) KPIs
-col1, col2, col3 = st.columns(3)
+col1, col2, col3, col4 = st.columns(4)
 with col1:
-    st.metric("Avg. Actual Price", f"${filtered['actual_price'].mean():.2f}")
+    st.metric("Avg. Actual Price",      f"${filtered['actual_price'].mean():.2f}")
 with col2:
-    st.metric("Avg. Discount", f"{filtered['discount_percentage'].mean():.1f}%")
+    st.metric("Avg. Discount %",        f"{filtered['discount_percentage'].mean():.1f}%")
 with col3:
-    st.metric("Avg. Rate to Base", f"{filtered['rate_to_base'].mean():.4f}")
+    st.metric("Avg. Rate to Base",      f"{filtered['rate_to_base'].mean():.4f}")
+with col4:
+    st.metric("Distinct Countries Shown", filtered["country"].nunique())
 
 # 5) Bar chart: Average actual price by category
 st.subheader("Average Actual Price by Category")
-bar_data = (
+bar_cat = (
     filtered
     .groupby("category_name")["actual_price"]
     .mean()
     .sort_values(ascending=False)
-    .reset_index()
 )
-st.bar_chart(
-    data=bar_data.set_index("category_name"),
-    use_container_width=True
-)
+st.bar_chart(bar_cat)
 
-# 6) Line chart: Selected product price over time
+# 6) Bar chart: Average actual price by country
+st.subheader("Average Actual Price by Country")
+bar_country = (
+    filtered
+    .groupby("country")["actual_price"]
+    .mean()
+    .sort_values(ascending=False)
+)
+st.bar_chart(bar_country)
+
+# 7) Line chart: Selected product price over time
 st.subheader("Price Over Time by Product")
 if prods:
-    line_data = (
+    line = (
         filtered
-        .groupby(["full_date","product_name"])["actual_price"]
-        .mean()
-        .unstack("product_name")
+        .pivot_table(
+            index="full_date",
+            columns="product_name",
+            values="actual_price",
+            aggfunc="mean"
+        )
     )
-    st.line_chart(line_data, use_container_width=True)
+    st.line_chart(line)
 else:
     st.info("Select at least one product to see its price trend.")
 
-# 7) Raw data table
+# 8) Raw data table
 st.subheader("Underlying Data")
 st.dataframe(filtered, height=300, use_container_width=True)
