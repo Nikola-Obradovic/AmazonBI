@@ -169,3 +169,25 @@ Exchange Rate API ───▶ staging schema
                       ↓
                Streamlit Dashboard
 ```
+
+Public schema ERD:
+
+![image](https://github.com/user-attachments/assets/5114216e-821a-4d66-83b6-3d6b90726e84)
+
+
+Staging schema ERD:
+
+![image](https://github.com/user-attachments/assets/7baba7bd-3c30-44ae-8d36-5974c3fae10e)
+
+
+Warehouse schema ERD:
+
+![image](https://github.com/user-attachments/assets/9feebe3f-4033-48d2-bae2-106d0f9666de)
+
+
+
+
+
+
+
+
